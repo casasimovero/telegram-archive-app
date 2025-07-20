@@ -137,14 +137,20 @@
         function showStatus(message, type = 'info') {
             const statusDiv = document.getElementById('status');
             statusDiv.innerText = message;
-            statusDiv.style.backgroundColor = tg.themeParams.secondary_bg_color || '#e0e0e0';
-            statusDiv.style.color = tg.themeParams.text_color || '#333';
+            // Imposta colori in base al tipo di messaggio
+            if (type === 'error') {
+                statusDiv.style.backgroundColor = '#f8d7da'; // Colore per errore
+                statusDiv.style.color = '#721c24';
+            } else if (type === 'success') {
+                statusDiv.style.backgroundColor = '#d4edda'; // Colore per successo
+                statusDiv.style.color = '#155724';
+            } else { // info
+                statusDiv.style.backgroundColor = tg.themeParams.secondary_bg_color || '#e0e0e0';
+                statusDiv.style.color = tg.themeParams.text_color || '#333';
+            }
             statusDiv.style.display = 'block';
-            setTimeout(() => {
-                statusDiv.style.display = 'none';
-            }, 3000); // Nascondi dopo 3 secondi
+            // Non nascondere automaticamente o chiudere la Web App qui per ora
         }
-
         function sendData() {
             const contentType = document.getElementById('contentType').value;
             const title = document.getElementById('titleInput').value.trim();
