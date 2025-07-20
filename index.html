@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivio Personale - Aggiungi Contenuto</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--tg-theme-bg-color, #f4f4f5); /* Colore di sfondo Telegram */
+            color: var(--tg-theme-text-color, #333); /* Colore testo Telegram */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: var(--tg-theme-text-color, #2c3e50);
+            text-align: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .container {
+            background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--tg-theme-hint-color, #555);
+        }
+        input[type="text"],
+        input[type="url"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--tg-theme-border-color, #ddd);
+            border-radius: 8px;
+            box-sizing: border-box;
+            background-color: var(--tg-theme-field-bg-color, #ebebf5);
+            color: var(--tg-theme-text-color, #333);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--tg-theme-button-color, #007bff);
+            color: var(--tg-theme-button-text-color, #fff);
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .status-message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            background-color: var(--tg-theme-bg-color, #e0e0e0);
+            color: var(--tg-theme-text-color, #333);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Aggiungi Contenuto all'Archivio</h1>
+
+        <label for="contentType">Tipo di Contenuto:</label>
+        <select id="contentType">
+            <option value="nota">Nota Testuale</option>
+            <option value="link">Link</option>
+            <option value="idea">Idea 💡</option>
+            <option value="ricetta">Ricetta 🍳</option>
+            <option value="libro">Libro 📚</option>
+            <option value="film">Film/Serie TV 🎬</option>
+            <option value="musica">Musica/Brano 🎵</option>
+            <option value="altro">Altro</option>
+        </select>
+
+        <label for="titleInput">Titolo (opzionale):</label>
+        <input type="text" id="titleInput" placeholder="Inserisci un titolo">
+        
+        <label for="linkInput">URL/Link (opzionale):</label>
+        <input type="url" id="linkInput" placeholder="Incolla un link qui">
+        
+        <label for="notesInput">Note/Descrizione:</label>
+        <textarea id="notesInput" placeholder="Scrivi le tue note o una descrizione..."></textarea>
+        
+        <label for="tagsInput">Tag Aggiuntivi (separati da spazio, es. #viaggio #ispirazione):</label>
+        <input type="text" id="tagsInput" placeholder="#tag1 #tag2 #tag3">
+
+        <button onclick="sendData()">Salva nell'Archivio</button>
+
+        <div id="status" class="status-message" style="display:none;"></div>
+    </div>
+
+    <script>
+        // Inizializza la Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand(); // Espandi la Web App per occupare più spazio
+
+        // Applica i colori del tema Telegram se disponibili
+        if (tg.themeParams) {
+            document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
+            document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', tg.themeParams.secondary_bg_color);
+            document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color);
+            document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color);
+            document.documentElement.style.setProperty('--tg-theme-link-color', tg.themeParams.link_color);
+            document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color);
+            document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color);
+            document.documentElement.style.setProperty('--tg-theme-border-color', tg.themeParams.border_color);
+            document.documentElement.style.setProperty('--tg-theme-field-bg-color', tg.themeParams.input_bg_color);
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = message;
+            statusDiv.style.backgroundColor = tg.themeParams.secondary_bg_color || '#e0e0e0';
+            statusDiv.style.color = tg.themeParams.text_color || '#333';
+            statusDiv.style.display = 'block';
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000); // Nascondi dopo 3 secondi
+        }
+
+        function sendData() {
+            const contentType = document.getElementById('contentType').value;
+            const title = document.getElementById('titleInput').value.trim();
+            const link = document.getElementById('linkInput').value.trim();
+            const notes = document.getElementById('notesInput').value.trim();
+            const tagsInput = document.getElementById('tagsInput').value.trim();
+
+            if (!notes && !link && !title) {
+                showStatus("Per favore, inserisci almeno una nota, un link o un titolo.", "error");
+                return;
+            }
+
+            let messageContent = [];
+            let hashtags = [];
+
+            // Aggiungi hashtag basato sul tipo di contenuto selezionato
+            if (contentType) {
+                hashtags.push(`#${contentType}`);
+            }
+
+            if (title) {
+                messageContent.push(`*Titolo*: ${title}`);
+            }
+            if (link) {
+                messageContent.push(`*Link*: ${link}`);
+                // Se il tipo non è già link, aggiungilo
+                if (!hashtags.includes('#link')) { 
+                    hashtags.push(`#link`); 
+                }
+            }
+            if (notes) {
+                messageContent.push(`*Note*: ${notes}`);
+            }
+
+            // Aggiungi tag manuali
+            if (tagsInput) {
+                const manualTags = tagsInput.split(/\s+/).filter(tag => tag.startsWith('#'));
+                hashtags = [...new Set([...hashtags, ...manualTags])]; // Unisci e rimuovi duplicati
+            }
+
+            let finalMessage = messageContent.join('\n');
+            if (hashtags.length > 0) {
+                finalMessage += `\n\n${hashtags.join(' ')}`;
+            }
+
+            // Invia i dati al bot
+            if (tg.sendData) {
+                tg.sendData(finalMessage);
+                showStatus("Contenuto inviato al bot!", "success");
+                // Reset dei campi dopo l'invio
+                document.getElementById('titleInput').value = '';
+                document.getElementById('linkInput').value = '';
+                document.getElementById('notesInput').value = '';
+                document.getElementById('tagsInput').value = '';
+                document.getElementById('contentType').value = 'nota'; // Resetta al valore predefinito
+            } else {
+                showStatus("Questa funzionalità richiede l'apertura all'interno di Telegram. Contenuto simulato inviato: " + finalMessage, "error");
+                console.log("Dati simulati inviati:", finalMessage);
+            }
+        }
+    </script>
+</body>
+</html>
